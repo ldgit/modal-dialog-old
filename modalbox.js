@@ -1,5 +1,4 @@
 module.exports = function makeCreateModal($) {
-
   return createModal.bind(null, $);
 };
 
@@ -8,6 +7,10 @@ function createModal($, selector, modalContentSelector) {
   $(modalContentSelector).appendTo($modalDiv);
 
   $(selector).on('click', function() {
-    $modalDiv.css('display', 'block');
+    if($modalDiv.css('display') === 'none') {
+      $modalDiv.css('display', 'block');
+    } else {
+      $modalDiv.css('display', 'none');
+    }
   });
 }

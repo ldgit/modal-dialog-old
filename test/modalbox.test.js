@@ -35,6 +35,8 @@ describe('modal box', () => {
     createModal('#myButton');
     $button.trigger('click');
     assert.equal($('.js-modal-box-content-div').css('display'), 'block');
+    $button.trigger('click');
+    assert.equal($('.js-modal-box-content-div').css('display'), 'none');
   });
 
   it('should move everything from second selector parameter to created div', () => {
@@ -71,6 +73,17 @@ describe('modal box', () => {
       assert.equal($('.js-modal-box-content-div').eq(1).find('#someStuff2').length, 1);
     });
 
-    it('should attach different event handlers for each');
+    it('should attach different event handlers for each modal box call', () => {
+      createModal('#myButton1', '#someStuff1');
+      createModal('#myButton2', '#someStuff2');
+
+      $button1.trigger('click');
+      assert.equal($('.js-modal-box-content-div').eq(0).css('display'), 'block');
+      assert.equal($('.js-modal-box-content-div').eq(1).css('display'), 'none');
+
+      $button2.trigger('click');
+      assert.equal($('.js-modal-box-content-div').eq(0).css('display'), 'block');
+      assert.equal($('.js-modal-box-content-div').eq(1).css('display'), 'block');
+    });
   });
 });
