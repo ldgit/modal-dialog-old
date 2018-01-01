@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "mocha",
+    "w": "mocha --watch"
   },
   "author": "",
   "license": "ISC",
@@ -12,6 +13,7 @@
     "jquery": "^3.2.1"
   },
   "devDependencies": {
-    "jest": "^22.0.4"
+    "jsdom": "^11.5.1",
+    "mocha": "^4.1.0"
   }
 }
