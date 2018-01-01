@@ -8,18 +8,12 @@ function createJqueryWithDom(window) {
 }
 
 describe('modal box', () => {
+  let jsdom;
   let $;
   let createModal;
-  let jsdom;
 
   beforeEach(() => {
-    jsdom = new JSDOM(
-      `<html>
-        <body>
-        </body>
-      </html>`
-    );
-
+    jsdom = new JSDOM(`<html><body></body></html>`);
     $ = createJqueryWithDom(jsdom.window);
     createModal = makeCreateModal($);
   });
@@ -31,8 +25,10 @@ describe('modal box', () => {
   });
 
   it('should attach an event to given css selector that toggles the modal div visibility', () => {
-    const $button = $('<button>').prop('id', 'myButton').appendTo('body');
-    createModal('#myButton');
+    const $button = createModalContentAndButtonThatActivatesIt('someStuff', 'myButton').$button;
+
+    createModal('#myButton', '#someStuff');
+
     $button.trigger('click');
     assert.equal($('.js-modal-box-content-div').css('display'), 'block');
     $button.trigger('click');
@@ -40,14 +36,33 @@ describe('modal box', () => {
   });
 
   it('should move everything from second selector parameter to created div', () => {
-    $('<div>').prop('id', 'someStuff').appendTo('body');
-    const $button = $('<button>').prop('id', 'myButton').appendTo('body');
+    createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
 
     createModal('#myButton', '#someStuff');
-    $button.trigger('click');
 
     assert.equal($('body > #someStuff').length, 0);
     assert.equal($('.js-modal-box-content-div #someStuff').length, 1);
+  });
+
+  it('should allow for custom modalbox styling via makeCreateModal() function', () => {
+    createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
+    const createStyledModal = makeCreateModal($, { cssClass: 'mySpecialClass' });
+
+    createStyledModal('#myButton', '#someStuff');
+
+    assert.strictEqual($('.js-modal-box-content-div').hasClass('mySpecialClass'), true);
+  });
+
+  context('when copyContent option is true', () => {
+    it('should copy modalbox contents instead of moving it', () => {
+      createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
+      const copyContentCreateModal = makeCreateModal($, { copyContent: true });
+
+      copyContentCreateModal('#myButton', '#someStuff');
+
+      assert.equal($('body > #someStuff').length, 1);
+      assert.equal($('.js-modal-box-content-div div').length, 1);
+    });
   });
 
   context('when two modalboxes on same page', () => {
@@ -55,12 +70,10 @@ describe('modal box', () => {
     let button2;
 
     beforeEach(() => {
-      $('<div>').prop('id', 'someStuff1').appendTo('body');
-      $('<div>').prop('id', 'someStuff2').appendTo('body');
+      $button1 = createModalContentAndButtonThatActivatesIt('someStuff1', 'myButton1').$button;
+      $button2 = createModalContentAndButtonThatActivatesIt('someStuff2', 'myButton2').$button;
       assert.equal($('body > #someStuff1').length, 1);
       assert.equal($('body > #someStuff2').length, 1);
-      $button1 = $('<button>').prop('id', 'myButton1').appendTo('body');
-      $button2 = $('<button>').prop('id', 'myButton2').appendTo('body');
     });
 
     it('should move each content to corresponding modalbox div', () => {
@@ -86,4 +99,22 @@ describe('modal box', () => {
       assert.equal($('.js-modal-box-content-div').eq(1).css('display'), 'block');
     });
   });
+
+  it('should allow individual functions to override global config', () => {
+    createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
+
+    createModal('#myButton', '#someStuff', { copyContent: true, cssClass: 'itcanbedone'});
+
+    assert.equal($('body > #someStuff').length, 1);
+    assert.strictEqual($('.js-modal-box-content-div').hasClass('itcanbedone'), true);
+  });
+
+  function createModalContentAndButtonThatActivatesIt(contentId, buttonId) {
+    const $content = $('<div>').prop('id', contentId).appendTo('body');
+    const $button = $('<button>').prop('id', buttonId).appendTo('body');
+
+    assert.equal($('body > #' + contentId).length, 1);
+
+    return { $button, $content };
+  }
 });
