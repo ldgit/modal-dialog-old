@@ -8,20 +8,23 @@ function createJqueryWithDom(window) {
 }
 
 describe('modal box', () => {
-  let jsdom;
+  let document;
   let $;
   let createModal;
 
   beforeEach(() => {
-    jsdom = new JSDOM(`<html><body></body></html>`);
+    let jsdom = new JSDOM(`<html><body></body></html>`);
     $ = createJqueryWithDom(jsdom.window);
+    document = jsdom.window.document;
     createModal = makeCreateModal($);
   });
 
   it('should append a new hidden modal div to html body when called', () => {
     createModal();
-    assert.equal($('.js-modal-box-content-div').length, 1);
-    assert.equal($('.js-modal-box-content-div').css('display'), 'none');
+
+    const modalBoxContent = document.querySelector('.js-modal-box-content-div');
+    assert.notEqual(modalBoxContent, null);
+    assert.equal(modalBoxContent.style.display, 'none');
   });
 
   it('should attach an event to given css selector that toggles the modal div visibility', () => {
@@ -29,19 +32,22 @@ describe('modal box', () => {
 
     createModal('#myButton', '#someStuff');
 
+    const modalBoxContent = document.querySelector('.js-modal-box-content-div');
     $button.trigger('click');
-    assert.equal($('.js-modal-box-content-div').css('display'), 'block');
+    assert.equal(modalBoxContent.style.display, 'block');
     $button.trigger('click');
-    assert.equal($('.js-modal-box-content-div').css('display'), 'none');
+    assert.equal(modalBoxContent.style.display, 'none');
   });
 
-  it('should move everything from second selector parameter to created div', () => {
+  it('should move everything under second selector parameter to created modal div', () => {
     createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
 
     createModal('#myButton', '#someStuff');
 
-    assert.equal($('body > #someStuff').length, 0);
-    assert.equal($('.js-modal-box-content-div #someStuff').length, 1);
+    // assert modal content moved from original location
+    assert.strictEqual(document.querySelector('body > #someStuff'), null);
+    // assert modal content moved to modal box div
+    assert.notEqual(document.querySelector('.js-modal-box-content-div > #someStuff'), null);
   });
 
   it('should allow for custom modalbox styling via makeCreateModal() function', () => {
@@ -50,7 +56,7 @@ describe('modal box', () => {
 
     createStyledModal('#myButton', '#someStuff');
 
-    assert.strictEqual($('.js-modal-box-content-div').hasClass('mySpecialClass'), true);
+    assert.strictEqual(document.querySelector('.js-modal-box-content-div').classList.contains('mySpecialClass'), true);
   });
 
   context('when two modalboxes on same page', () => {
@@ -60,18 +66,19 @@ describe('modal box', () => {
     beforeEach(() => {
       $button1 = createModalContentAndButtonThatActivatesIt('someStuff1', 'myButton1').$button;
       $button2 = createModalContentAndButtonThatActivatesIt('someStuff2', 'myButton2').$button;
-      assert.equal($('body > #someStuff1').length, 1);
-      assert.equal($('body > #someStuff2').length, 1);
+      assert.notEqual(document.querySelector('body > #someStuff1'), null);
+      assert.notEqual(document.querySelector('body > #someStuff2'), null);
     });
 
     it('should move each content to corresponding modalbox div', () => {
       createModal('#myButton1', '#someStuff1');
       createModal('#myButton2', '#someStuff2');
 
-      assert.equal($('body > #someStuff1').length, 0);
-      assert.equal($('body > #someStuff2').length, 0);
-      assert.equal($('.js-modal-box-content-div').eq(0).find('#someStuff1').length, 1);
-      assert.equal($('.js-modal-box-content-div').eq(1).find('#someStuff2').length, 1);
+      assert.notEqual(document.querySelectorAll('.js-modal-box-content-div')[0].querySelector('#someStuff1'), null);
+      assert.strictEqual(document.querySelectorAll('.js-modal-box-content-div')[0].querySelector('#someStuff2'), null);
+
+      assert.notEqual(document.querySelectorAll('.js-modal-box-content-div')[1].querySelector('#someStuff2'), null);
+      assert.strictEqual(document.querySelectorAll('.js-modal-box-content-div')[1].querySelector('#someStuff1'), null);
     });
 
     it('should attach different event handlers for each modal box call', () => {
@@ -79,19 +86,19 @@ describe('modal box', () => {
       createModal('#myButton2', '#someStuff2');
 
       $button1.trigger('click');
-      assert.equal($('.js-modal-box-content-div').eq(0).css('display'), 'block');
-      assert.equal($('.js-modal-box-content-div').eq(1).css('display'), 'none');
+      assert.equal(document.querySelectorAll('.js-modal-box-content-div')[0].style.display, 'block');
+      assert.equal(document.querySelectorAll('.js-modal-box-content-div')[1].style.display, 'none');
 
       $button2.trigger('click');
-      assert.equal($('.js-modal-box-content-div').eq(0).css('display'), 'block');
-      assert.equal($('.js-modal-box-content-div').eq(1).css('display'), 'block');
+      assert.equal(document.querySelectorAll('.js-modal-box-content-div')[0].style.display, 'block');
+      assert.equal(document.querySelectorAll('.js-modal-box-content-div')[1].style.display, 'block');
     });
   });
 
   it('should allow individual functions to override global config', () => {
     createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
     createModal('#myButton', '#someStuff', { cssClass: 'itcanbedone'});
-    assert.strictEqual($('.js-modal-box-content-div').hasClass('itcanbedone'), true);
+    assert.strictEqual(document.querySelector('.js-modal-box-content-div').classList.contains('itcanbedone'), true);
   });
 
   function createModalContentAndButtonThatActivatesIt(contentId, buttonId) {
