@@ -1,7 +1,6 @@
 module.exports = function makeCreateModal($, options) {
   var globalConfig = $.extend({
     cssClass: false,
-    copyContent: false,
   }, options);
 
   return createModal.bind(null, $, globalConfig);
@@ -16,7 +15,7 @@ function createModal($, globalConfig, selector, modalContentSelector, specificOp
     $modalDiv.addClass(options.cssClass);
   }
 
-  var $modalContent = options.copyContent ? $(modalContentSelector).clone() : $(modalContentSelector);
+  var $modalContent = $(modalContentSelector);
   $modalContent.appendTo($modalDiv);
 
   $(selector).on('click', function() {

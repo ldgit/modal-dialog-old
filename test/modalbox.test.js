@@ -53,18 +53,6 @@ describe('modal box', () => {
     assert.strictEqual($('.js-modal-box-content-div').hasClass('mySpecialClass'), true);
   });
 
-  context('when copyContent option is true', () => {
-    it('should copy modalbox contents instead of moving it', () => {
-      createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
-      const copyContentCreateModal = makeCreateModal($, { copyContent: true });
-
-      copyContentCreateModal('#myButton', '#someStuff');
-
-      assert.equal($('body > #someStuff').length, 1);
-      assert.equal($('.js-modal-box-content-div div').length, 1);
-    });
-  });
-
   context('when two modalboxes on same page', () => {
     let button1;
     let button2;
@@ -102,10 +90,7 @@ describe('modal box', () => {
 
   it('should allow individual functions to override global config', () => {
     createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
-
-    createModal('#myButton', '#someStuff', { copyContent: true, cssClass: 'itcanbedone'});
-
-    assert.equal($('body > #someStuff').length, 1);
+    createModal('#myButton', '#someStuff', { cssClass: 'itcanbedone'});
     assert.strictEqual($('.js-modal-box-content-div').hasClass('itcanbedone'), true);
   });
 
