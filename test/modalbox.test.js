@@ -28,14 +28,14 @@ describe('modal box', () => {
   });
 
   it('should attach an event to given css selector that toggles the modal div visibility', () => {
-    const $button = createModalContentAndButtonThatActivatesIt('someStuff', 'myButton').$button;
+    const { button } = createModalContentAndButtonThatActivatesIt('someStuff', 'myButton');
 
     createModal('#myButton', '#someStuff');
 
     const modalBoxContent = document.querySelector('.js-modal-box-content-div');
-    $button.trigger('click');
+    button.click();
     assert.equal(modalBoxContent.style.display, 'block');
-    $button.trigger('click');
+    button.click();
     assert.equal(modalBoxContent.style.display, 'none');
   });
 
@@ -64,8 +64,8 @@ describe('modal box', () => {
     let button2;
 
     beforeEach(() => {
-      $button1 = createModalContentAndButtonThatActivatesIt('someStuff1', 'myButton1').$button;
-      $button2 = createModalContentAndButtonThatActivatesIt('someStuff2', 'myButton2').$button;
+      button1 = createModalContentAndButtonThatActivatesIt('someStuff1', 'myButton1').button;
+      button2 = createModalContentAndButtonThatActivatesIt('someStuff2', 'myButton2').button;
       assert.notEqual(document.querySelector('body > #someStuff1'), null);
       assert.notEqual(document.querySelector('body > #someStuff2'), null);
     });
@@ -85,11 +85,11 @@ describe('modal box', () => {
       createModal('#myButton1', '#someStuff1');
       createModal('#myButton2', '#someStuff2');
 
-      $button1.trigger('click');
+      button1.click();
       assert.equal(document.querySelectorAll('.js-modal-box-content-div')[0].style.display, 'block');
       assert.equal(document.querySelectorAll('.js-modal-box-content-div')[1].style.display, 'none');
 
-      $button2.trigger('click');
+      button2.click();
       assert.equal(document.querySelectorAll('.js-modal-box-content-div')[0].style.display, 'block');
       assert.equal(document.querySelectorAll('.js-modal-box-content-div')[1].style.display, 'block');
     });
@@ -102,11 +102,18 @@ describe('modal box', () => {
   });
 
   function createModalContentAndButtonThatActivatesIt(contentId, buttonId) {
-    const $content = $('<div>').prop('id', contentId).appendTo('body');
-    const $button = $('<button>').prop('id', buttonId).appendTo('body');
+    const body = document.getElementsByTagName('body')[0];
 
-    assert.equal($('body > #' + contentId).length, 1);
+    const content = document.createElement('div');
+    content.id = contentId;
+    body.appendChild(content);
 
-    return { $button, $content };
+    const button = document.createElement('button');
+    button.id = buttonId;
+    body.appendChild(button);
+
+    assert.notEqual(document.querySelector('body > #' + contentId), null);
+
+    return { button, content };
   }
 });
